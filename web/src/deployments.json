@@ -1,0 +1,19 @@
+{
+  "local": {
+    "chainId": 31337,
+    "garden": "0x071586BA1b380B00B793Cc336fe01106B0BFbE6D",
+    "deployBlock": 368,
+    "squeekCore": "0x54B8d8E2455946f2A5B8982283f2359812e815ce",
+    "sqk": "0xf090f16dEc8b6D24082Edd25B1C8D26f2bC86128",
+    "squeekNft": "0xd9140951d8aE6E5F625a02F5908535e16e3af964"
+  },
+  "sepolia": {
+    "chainId": 11155111,
+    "garden": "0x88189a8A5870A632413B6df1b1FCDb6D5B7950Ab",
+    "deployBlock": 12034894,
+    "squeekCore": "0x980b4424c007caf7a1f3670b48c8eaef7ebc3d44",
+    "sqk": "0x5501e1fa81be1c3f49225fa7668da0245d07db60",
+    "squeekNft": "0xcb98349c134ab983da5bfd80527dfe2552bdb70f",
+    "squeekNftFromBlock": 11998937
+  }
+}

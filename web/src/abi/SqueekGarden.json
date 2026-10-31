@@ -1,0 +1,2020 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "contract ISqueekCore",
+        "name": "core_",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "sqk_",
+        "type": "address"
+      },
+      {
+        "internalType": "contract ISqueekNft",
+        "name": "squeekNft_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "treasury_",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "BadNickname",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "BadPlot",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "BadReferrer",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "HelpLimit",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "HelperDailyLimit",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "HolderPlotsOff",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "NeedsFreshRun",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "NeedsSqueek",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NicknameTaken",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint64",
+        "name": "progress",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "needed",
+        "type": "uint64"
+      }
+    ],
+    "name": "NotRipe",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "NotSqueekOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OwnGarden",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableInvalidOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "PlotEmpty",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "PlotOccupied",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReferrerAlreadySet",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReferrerTooLate",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint16",
+        "name": "dailyLimit",
+        "type": "uint16"
+      }
+    ],
+    "name": "SeedDailyLimit",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      }
+    ],
+    "name": "SeedInactive",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "pantrySnacks",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint32",
+        "name": "unlockSnacks",
+        "type": "uint32"
+      }
+    ],
+    "name": "SeedLocked",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint64",
+        "name": "readyAt",
+        "type": "uint64"
+      }
+    ],
+    "name": "SqueekMoveCooldown",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "TooManyWaterings",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      }
+    ],
+    "name": "UnknownSeed",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint64",
+        "name": "readyAt",
+        "type": "uint64"
+      }
+    ],
+    "name": "WaterCooldown",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "Wilted",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroGrowAmount",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "core",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "work",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "blockHeight",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "settledRound",
+        "type": "uint64"
+      }
+    ],
+    "name": "CoreSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "points",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "overripe",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "pantrySnacks",
+        "type": "uint64"
+      }
+    ],
+    "name": "Harvested",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "helper",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "Helped",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "nickname",
+        "type": "string"
+      }
+    ],
+    "name": "NicknameSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "atWork",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint128",
+        "name": "paid",
+        "type": "uint128"
+      }
+    ],
+    "name": "Planted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "points",
+        "type": "uint64"
+      }
+    ],
+    "name": "ReferralBonus",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      }
+    ],
+    "name": "ReferrerSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "active",
+        "type": "bool"
+      }
+    ],
+    "name": "SeedActiveSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum SqueekGarden.GrowMode",
+        "name": "mode",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "growAmount",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "basePoints",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint128",
+        "name": "price",
+        "type": "uint128"
+      }
+    ],
+    "name": "SeedAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sqk",
+        "type": "address"
+      }
+    ],
+    "name": "SqkSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "SqueekBound",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "squeekNft",
+        "type": "address"
+      }
+    ],
+    "name": "SqueekNftSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "treasury",
+        "type": "address"
+      }
+    ],
+    "name": "TreasurySet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      }
+    ],
+    "name": "Uprooted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "waterings",
+        "type": "uint8"
+      }
+    ],
+    "name": "Watered",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "BASE_PLOTS",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "FRESH_RUN_ROUNDS",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "HELPS_PER_DAY",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "HELP_BONUS_PCT",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "HELP_POINTS",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_HELPS",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_PLOTS",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_WATERINGS",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "REFERRAL_PCT",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "SQUEEK_MOVE_COOLDOWN",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WATER_BONUS_PCT",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WATER_COOLDOWN",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "enum SqueekGarden.GrowMode",
+            "name": "mode",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint64",
+            "name": "growAmount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "napWorkLimit",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "basePoints",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "unlockSnacks",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint128",
+            "name": "price",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint16",
+            "name": "dailyLimit",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bool",
+            "name": "needsFreshRun",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "rare",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "active",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct SqueekGarden.Seed",
+        "name": "s",
+        "type": "tuple"
+      }
+    ],
+    "name": "addSeed",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "bindSqueek",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "boundSqueekOf",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "nft",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "clearNickname",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "core",
+    "outputs": [
+      {
+        "internalType": "contract ISqueekCore",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "coreMapping",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "work",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "blockHeight",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settledRound",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct SqueekGarden.Readings",
+        "name": "base",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "work",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "blockHeight",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settledRound",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct SqueekGarden.Readings",
+        "name": "carried",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "garden",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "seedId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "plantedWork",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "plantedBlock",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "plantedRound",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "waterings",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint64",
+            "name": "lastWateredAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "helps",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint32",
+            "name": "lastHelpDay",
+            "type": "uint32"
+          }
+        ],
+        "internalType": "struct SqueekGarden.Plot[12]",
+        "name": "",
+        "type": "tuple[12]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "harvest",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8[]",
+        "name": "plots",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "harvestMany",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "hasSqueek",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner_",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "helpWater",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "name": "helpsOnDay",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isPlayer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "nicknameOf",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "nicknameOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pantrySnacks",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      }
+    ],
+    "name": "plant",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8[]",
+        "name": "plots",
+        "type": "uint8[]"
+      },
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      }
+    ],
+    "name": "plantMany",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      }
+    ],
+    "name": "plantedToday",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "playerCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "offset",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "playersPage",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "player",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "nickname",
+            "type": "string"
+          },
+          {
+            "internalType": "uint64",
+            "name": "points",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "harvests",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "rareHarvests",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "helps",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "referrals",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "referralPoints",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct SqueekGarden.PlayerView[]",
+        "name": "page",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "plotCount",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "plotStatus",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "progress",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "needed",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bool",
+            "name": "ripe",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "overripe",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "wilted",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SqueekGarden.PlotStatus",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "points",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "readings",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "work",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "blockHeight",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settledRound",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct SqueekGarden.Readings",
+        "name": "r",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint64",
+        "name": "recentWork",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "referrerOf",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      }
+    ],
+    "name": "seed",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "enum SqueekGarden.GrowMode",
+            "name": "mode",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint64",
+            "name": "growAmount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "napWorkLimit",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "basePoints",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "unlockSnacks",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint128",
+            "name": "price",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint16",
+            "name": "dailyLimit",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bool",
+            "name": "needsFreshRun",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "rare",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "active",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct SqueekGarden.Seed",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "seedCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "seeds",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "enum SqueekGarden.GrowMode",
+            "name": "mode",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint64",
+            "name": "growAmount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "napWorkLimit",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "basePoints",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "unlockSnacks",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint128",
+            "name": "price",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint16",
+            "name": "dailyLimit",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bool",
+            "name": "needsFreshRun",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "rare",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "active",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct SqueekGarden.Seed[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract ISqueekCore",
+        "name": "core_",
+        "type": "address"
+      }
+    ],
+    "name": "setCore",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "nickname",
+        "type": "string"
+      }
+    ],
+    "name": "setNickname",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      }
+    ],
+    "name": "setReferrer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "bool",
+        "name": "active",
+        "type": "bool"
+      }
+    ],
+    "name": "setSeedActive",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "sqk_",
+        "type": "address"
+      }
+    ],
+    "name": "setSqk",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract ISqueekNft",
+        "name": "squeekNft_",
+        "type": "address"
+      }
+    ],
+    "name": "setSqueekNft",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "treasury_",
+        "type": "address"
+      }
+    ],
+    "name": "setTreasury",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sqk",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "squeekBinding",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "garden",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "since",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "squeekMovableAt",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "squeekNft",
+    "outputs": [
+      {
+        "internalType": "contract ISqueekNft",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "stats",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "points",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint32",
+        "name": "harvests",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "rareHarvests",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "helps",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "referrals",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "referralPoints",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "treasury",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "uproot",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "plot",
+        "type": "uint8"
+      }
+    ],
+    "name": "water",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8[]",
+        "name": "plots",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "waterMany",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

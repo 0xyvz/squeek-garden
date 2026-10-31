@@ -1,0 +1,249 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "rounds",
+        "type": "uint64"
+      }
+    ],
+    "name": "nap",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "recentWork",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roundPage",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "certifiedThroughRound",
+            "type": "uint64"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint64",
+                "name": "cumulativeWork",
+                "type": "uint64"
+              },
+              {
+                "internalType": "uint96",
+                "name": "cumulativeBlockUnits",
+                "type": "uint96"
+              },
+              {
+                "internalType": "uint32",
+                "name": "workPerThousandBlocks",
+                "type": "uint32"
+              }
+            ],
+            "internalType": "struct ISqueekCore.Checkpoint",
+            "name": "start",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint64",
+                "name": "cumulativeWork",
+                "type": "uint64"
+              },
+              {
+                "internalType": "uint96",
+                "name": "cumulativeBlockUnits",
+                "type": "uint96"
+              },
+              {
+                "internalType": "uint32",
+                "name": "workPerThousandBlocks",
+                "type": "uint32"
+              }
+            ],
+            "internalType": "struct ISqueekCore.Checkpoint",
+            "name": "end",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint64",
+                "name": "roundId",
+                "type": "uint64"
+              },
+              {
+                "internalType": "uint64",
+                "name": "cumulativeWork",
+                "type": "uint64"
+              },
+              {
+                "internalType": "uint96",
+                "name": "cumulativeBlockUnits",
+                "type": "uint96"
+              },
+              {
+                "internalType": "uint32",
+                "name": "workPerThousandBlocks",
+                "type": "uint32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "dataHash",
+                "type": "bytes32"
+              }
+            ],
+            "internalType": "struct ISqueekCore.RoundRecord[]",
+            "name": "rounds",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct ISqueekCore.RoundPage",
+        "name": "page",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "work",
+        "type": "uint64"
+      }
+    ],
+    "name": "run",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "work",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "blockHeight",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "settledRound",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "recentWork_",
+        "type": "uint64"
+      }
+    ],
+    "name": "setState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "work",
+        "type": "uint64"
+      }
+    ],
+    "name": "setWork",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "state",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "settledThroughRound",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "cumulativeWork",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint96",
+            "name": "cumulativeBlockUnits",
+            "type": "uint96"
+          },
+          {
+            "internalType": "uint64",
+            "name": "blockHeight",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint96",
+            "name": "blockProgress",
+            "type": "uint96"
+          },
+          {
+            "internalType": "uint32",
+            "name": "workPerThousandBlocks",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "authorizationNonce",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "paused",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct ISqueekCore.CoreState",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

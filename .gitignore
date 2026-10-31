@@ -1,0 +1,9 @@
+node_modules/
+.env
+artifacts/
+cache/
+coverage/
+typechain-types/
+web/node_modules/
+web/dist/
+.claude/
