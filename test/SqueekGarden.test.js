@@ -9,9 +9,13 @@ const CHAMOMILE = 4;
 const MOON_MELON = 6;
 const GOLDEN_CARROT = 7;
 
+const PUMPKIN = 5;
+const BERRY = 8;
+
 const SQK = 10n ** 18n;
 
-async function deployGarden() {
+/** The garden as deployed, with every seed at its level. */
+async function deployLeveledGarden() {
   const [owner, alice, bob, carol, treasury] = await ethers.getSigners();
   const core = await ethers.deployContract("MockSqueekCore");
   const sqk = await ethers.deployContract("MockSQK");
@@ -19,6 +23,13 @@ async function deployGarden() {
   await core.setState(45_000, 4_000, 500, 0);
   const garden = await ethers.deployContract("SqueekGarden", [core, sqk, nft, treasury.address]);
   return { garden, core, sqk, nft, owner, alice, bob, carol, treasury };
+}
+
+/** Every seed open from level 1, so the other rules can be tested on their own. */
+async function deployGarden() {
+  const f = await deployLeveledGarden();
+  for (let id = 1; id <= Number(await f.garden.seedCount()); id++) await f.garden.setSeedLevel(id, 1);
+  return f;
 }
 
 /** Harvests `n` hays for `player`, the quickest way to fill the pantry in tests. */
@@ -84,7 +95,6 @@ describe("SqueekGarden", function () {
 
     it("caps paid seeds per player per UTC day, and the cap resets the next day", async function () {
       const { garden, sqk, alice, bob } = await loadFixture(deployGarden);
-      const BERRY = 8;
       expect((await garden.seeds())[GOLDEN_CARROT - 1].dailyLimit).to.equal(3);
       expect((await garden.seeds())[BERRY - 1].dailyLimit).to.equal(1);
       for (const p of [alice, bob]) {
@@ -268,6 +278,75 @@ describe("SqueekGarden", function () {
       await core.run(100);
       await expect(garden.connect(alice).harvest(0)).to.emit(garden, "Harvested");
       expect((await garden.stats(alice.address)).rareHarvests).to.equal(1);
+    });
+  });
+
+  describe("levels", function () {
+    it("comes quickly at first and then asks a little more per level", async function () {
+      const { garden } = await loadFixture(deployLeveledGarden);
+      const needed = [];
+      for (let level = 1; level <= 12; level++) needed.push(await garden.pointsForLevel(level));
+      expect(needed).to.deep.equal([0n, 30n, 100n, 250n, 600n, 1_800n, 4_000n, 7_500n, 12_000n, 18_000n, 26_000n, 34_000n]);
+      for (let k = 2; k < needed.length; k++) {
+        expect(needed[k] - needed[k - 1]).to.be.at.least(needed[k - 1] - needed[k - 2]); // each step at least as big
+      }
+      for (let level = 1; level <= 12; level++) {
+        expect(await garden.levelFor(needed[level - 1])).to.equal(level);
+        if (level > 1) expect(await garden.levelFor(needed[level - 1] - 1n)).to.equal(level - 1);
+      }
+    });
+
+    it("opens one seed per level, up to Hamster Berry at level 8", async function () {
+      const { garden } = await loadFixture(deployLeveledGarden);
+      expect((await garden.seeds()).map((s) => s.level)).to.deep.equal([1n, 2n, 3n, 4n, 5n, 7n, 6n, 8n]);
+    });
+
+    it("lets a new gardener plant only hay, and Sunflower once hay has paid 30 points", async function () {
+      const { garden, core, alice } = await loadFixture(deployLeveledGarden);
+      expect(await garden.levelOf(alice.address)).to.equal(1);
+      await expect(garden.connect(alice).plant(0, SUNFLOWER)).to.be.revertedWithCustomError(garden, "LevelTooLow").withArgs(SUNFLOWER, 2, 1);
+      await expect(garden.connect(alice).plant(0, PUMPKIN)).to.be.revertedWithCustomError(garden, "LevelTooLow").withArgs(PUMPKIN, 5, 1);
+      await fillPantry(garden, core, alice, 4); // 4 hays x 8 = 32 points
+      expect(await garden.levelOf(alice.address)).to.equal(2);
+      await garden.connect(alice).plant(0, SUNFLOWER);
+      await expect(garden.connect(alice).plant(1, BROCCOLI)).to.be.revertedWithCustomError(garden, "LevelTooLow");
+    });
+
+    it("counts help points towards the level too", async function () {
+      const { garden, core, alice, bob } = await loadFixture(deployLeveledGarden);
+      await fillPantry(garden, core, alice, 3); // 24 points
+      await garden.connect(bob).plant(0, HAY);
+      await garden.connect(alice).helpWater(bob.address, 0); // +2
+      await time.increase(86_400);
+      await garden.connect(alice).helpWater(bob.address, 0); // +2 = 28
+      expect(await garden.levelOf(alice.address)).to.equal(1);
+      await time.increase(86_400);
+      await garden.connect(alice).helpWater(bob.address, 0); // 30
+      expect(await garden.levelOf(alice.address)).to.equal(2);
+    });
+
+    it("lets the owner move a seed to another level", async function () {
+      const { garden, alice } = await loadFixture(deployLeveledGarden);
+      await expect(garden.setSeedLevel(PUMPKIN, 1)).to.emit(garden, "SeedLevelSet").withArgs(PUMPKIN, 1);
+      await garden.connect(alice).plant(0, PUMPKIN);
+      await garden.setSeedLevel(HAY, 0); // 0 also means open from the start
+      await garden.connect(alice).plant(1, HAY);
+      await expect(garden.setSeedLevel(99, 1)).to.be.revertedWithCustomError(garden, "UnknownSeed");
+    });
+  });
+
+  describe("harvest without roundPage", function () {
+    it("still harvests seeds that do not need a fresh run", async function () {
+      const { garden, core, alice } = await loadFixture(deployGarden);
+      await fillPantry(garden, core, alice, 150);
+      await garden.connect(alice).plantMany([0, 1], HAY);
+      await garden.connect(alice).plant(2, MOON_MELON);
+      await core.run(6_000);
+      await core.setPageDown(true);
+      await garden.connect(alice).harvestMany([0, 1]);
+      await expect(garden.connect(alice).harvest(2)).to.be.reverted;
+      await core.setPageDown(false);
+      await garden.connect(alice).harvest(2);
     });
   });
 
@@ -480,10 +559,11 @@ describe("SqueekGarden", function () {
 
     it("only lets the owner add seeds and move the treasury", async function () {
       const { garden, alice } = await loadFixture(deployGarden);
-      const seed = ["Weed", 0, 1, 0, 1, 0, 0, 0, false, false, true];
+      const seed = ["Weed", 0, 1, 0, 1, 0, 1, 0, 0, false, false, true];
       await expect(garden.connect(alice).addSeed(seed)).to.be.revertedWithCustomError(garden, "OwnableUnauthorizedAccount");
       await expect(garden.connect(alice).setTreasury(alice.address)).to.be.revertedWithCustomError(garden, "OwnableUnauthorizedAccount");
-      await expect(garden.addSeed(["Instant", 0, 0, 0, 1, 0, 0, 0, false, false, true])).to.be.revertedWithCustomError(garden, "ZeroGrowAmount");
+      await expect(garden.connect(alice).setSeedLevel(HAY, 3)).to.be.revertedWithCustomError(garden, "OwnableUnauthorizedAccount");
+      await expect(garden.addSeed(["Instant", 0, 0, 0, 1, 0, 1, 0, 0, false, false, true])).to.be.revertedWithCustomError(garden, "ZeroGrowAmount");
       await garden.addSeed(seed);
       expect(await garden.seedCount()).to.equal(9);
     });

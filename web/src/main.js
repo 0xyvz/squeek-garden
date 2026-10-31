@@ -19,6 +19,7 @@ import { sfx, buzz, isMuted, setMuted } from "./sfx.js";
 import { burst, waterDrops, plantSeed, flyTo, floatFrom, squish, shake, tickNumber } from "./fx.js";
 import { initNav } from "./nav.js";
 import { t, tp, seedName } from "./i18n.js";
+import { levelFor, pointsForLevel } from "./levels.js";
 
 initNav();
 
@@ -54,6 +55,7 @@ const state = {
   walletClient: null,
   nickname: "",
   stats: { points: 0n, harvests: 0, rareHarvests: 0, helps: 0 },
+  level: 0, // from the points; 0 until the player's stats first load
   plots: [],
   plotCount: BASE_PLOTS,
   sqkBalance: 0n,
@@ -310,6 +312,20 @@ async function loadMine() {
   state.plotCount = plotCount;
   state.sqkBalance = sqkBalance;
   if (state.stats.points !== prevPoints) state.pointsChanged = [prevPoints, state.stats.points];
+  const level = levelFor(state.stats.points);
+  if (state.level && level > state.level) levelUp(state.level, level);
+  state.level = level;
+}
+
+const myLevel = () => levelFor(state.stats.points);
+
+/** Cheers a level up and picks the seed it opened, if any. */
+function levelUp(from, to) {
+  const opened = state.seeds.map((s, i) => ({ s, id: i + 1 })).filter(({ s }) => s.active && s.level > from && s.level <= to);
+  const seed = opened.at(-1);
+  sfx.fanfare();
+  toast(seed ? t("toast.levelUpSeed", { n: to, seed: seedName(seed.s.name) }) : t("toast.levelUp", { n: to }), "ok");
+  if (seed && BigInt(seed.s.unlockSnacks) <= state.pantry) state.selectedSeed = seed.id;
 }
 
 /** Resolves a pending invite link to a gardener, if this player can still accept it. */
@@ -476,6 +492,7 @@ const ERROR_TEXT = [
   "NeedsFreshRun",
   "NeedsSqueek",
   "SeedLocked",
+  "LevelTooLow",
   "SeedDailyLimit",
   "TooManyWaterings",
   "WaterCooldown",
@@ -527,6 +544,10 @@ async function plant(indices) {
   const seedId = state.selectedSeed;
   const seed = state.seeds[seedId - 1];
   if (!seed) return;
+  if (seed.level > myLevel()) {
+    sfx.error();
+    return toast(t("toast.levelLocked", { seed: seedName(seed.name), n: seed.level }), "error");
+  }
   if (BigInt(seed.unlockSnacks) > state.pantry) {
     sfx.error();
     return toast(t("toast.seedLocked", { seed: seedName(seed.name), n: fmt(seed.unlockSnacks) }), "error");
@@ -738,8 +759,8 @@ function openNameDialog() {
     }, 300);
   });
   dlg.addEventListener("submit", async (ev) => {
-    if (ev.submitter?.value !== "save") return;
-    ev.preventDefault();
+    ev.preventDefault(); // the page-wide submit handler cancels method="dialog" anyway, so the dialog closes itself
+    if (ev.submitter?.value !== "save") return dlg.close();
     save.disabled = true;
     if (await saveNickname(input.value)) dlg.close();
     else save.disabled = false;
@@ -868,6 +889,7 @@ function renderTop() {
     paint(
       "wallet",
       `<div class="chip who"><span class="avatar" style="--hue:${parseInt(state.account.slice(2, 6), 16) % 360}"></span><span>${state.nickname ? esc(state.nickname) : short(state.account)}</span></div>
+      ${levelStat()}
       <div class="stat points"><span>${t("stat.points")}</span><strong id="points-num">${fmt(state.stats.points)}</strong></div>
       <div class="stat"><span>SQK</span><strong>${sqk(state.sqkBalance)}</strong></div>`,
     );
@@ -879,6 +901,18 @@ function renderTop() {
   }
   $("mute").textContent = isMuted() ? "🔇" : "🔊";
   $("mute").setAttribute("aria-label", isMuted() ? t("sound.off") : t("sound.on"));
+}
+
+/** The player's level with a bar to the next one. */
+function levelStat() {
+  const level = myLevel();
+  const from = pointsForLevel(level);
+  const next = pointsForLevel(level + 1);
+  const pts = Number(state.stats.points);
+  const pct = Math.min(100, ((pts - from) / (next - from)) * 100);
+  const hint = t("level.next", { n: fmt(next - pts), level: level + 1 });
+  return `<div class="stat level" title="${hint}"><span>${t("stat.level")}</span><strong>${level}</strong>
+      <div class="level-bar" role="progressbar" aria-label="${hint}" aria-valuenow="${pct.toFixed(0)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct.toFixed(1)}%"></i></div></div>`;
 }
 
 /** The stage badge; while the hamster runs it is a play button to Squeekchain's live stream on X. */
@@ -1036,7 +1070,8 @@ function renderSeeds() {
       .map((s, i) => {
         const id = i + 1;
         if (!s.active) return "";
-        const locked = BigInt(s.unlockSnacks) > state.pantry;
+        const levelLocked = s.level > myLevel();
+        const locked = levelLocked || BigInt(s.unlockSnacks) > state.pantry;
         const left = plantsLeft(id);
         const spent = !locked && left === 0;
         const price = spent ? t("seeds.tomorrow") : s.price === 0n ? t("seeds.free") : `${sqk(s.price)} SQK`;
@@ -1052,7 +1087,7 @@ function renderSeeds() {
           </span>
           <span class="packet-end">
             <b class="packet-pts">${t("seeds.pts", { n: s.basePoints })}</b>
-            <span class="price-tag ${s.price === 0n ? "free" : ""}">${locked ? `🫙 ${fmt(s.unlockSnacks)}` : price}</span>
+            <span class="price-tag ${s.price === 0n ? "free" : ""}">${levelLocked ? `⭐ ${t("level.short", { n: s.level })}` : locked ? `🫙 ${fmt(s.unlockSnacks)}` : price}</span>
           </span>
         </button>`;
       })
@@ -1306,7 +1341,7 @@ function renderBoard() {
     const share = Math.max(4, (Number(v) / best) * 100);
     return `<li class="${isMe ? "me" : ""} ${i < 3 ? "podium" : ""}"><span class="rank">${MEDALS[i] ?? i + 1}</span>
       <span class="board-who">
-        <button class="link who" data-action="visit-player" data-owner="${p.player}"><span class="avatar" style="--hue:${parseInt(p.player.slice(2, 6), 16) % 360}"></span><span class="board-name">${p.nickname ? esc(p.nickname) : `<span class="mono">${short(p.player)}</span>`}</span>${isMe ? `<span class="you">${t("board.you").replace(/[()（）]/g, "")}</span>` : ""}</button>
+        <button class="link who" data-action="visit-player" data-owner="${p.player}"><span class="avatar" style="--hue:${parseInt(p.player.slice(2, 6), 16) % 360}"></span><span class="board-name">${p.nickname ? esc(p.nickname) : `<span class="mono">${short(p.player)}</span>`}</span><span class="lvl">${t("level.short", { n: levelFor(p.points) })}</span>${isMe ? `<span class="you">${t("board.you").replace(/[()（）]/g, "")}</span>` : ""}</button>
         <span class="board-bar" aria-hidden="true"><i style="width:${share.toFixed(1)}%"></i></span>
       </span>
       <strong>${fmt(v)}</strong></li>`;

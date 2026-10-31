@@ -58,7 +58,8 @@ interface ISqueekNft {
 ///         - Block plants grow with completed Squeekchain blocks.
 ///         - Nap plants grow with settled rounds and wilt if the hamster runs too much while they grow.
 ///         - Fresh-run plants can only be harvested right after the hamster has run.
-///         Harvests fill a shared pantry that unlocks new seeds for everyone.
+///         Harvests fill a shared pantry that unlocks new seeds for everyone, and points raise the player's level,
+///         which opens new seeds for that player.
 contract SqueekGarden is Ownable {
     using SafeERC20 for IERC20;
 
@@ -77,6 +78,8 @@ contract SqueekGarden is Ownable {
     /// A Squeek serves one garden at a time and can move to another garden only this long after its last binding,
     /// so one NFT passed from wallet to wallet cannot open holder plots in many gardens.
     uint64 public constant SQUEEK_MOVE_COOLDOWN = 7 days;
+    /// Past the last listed level, every this many points is one more level.
+    uint64 public constant POINTS_PER_LATE_LEVEL = 8_000;
 
     enum GrowMode {
         Work,
@@ -91,6 +94,7 @@ contract SqueekGarden is Ownable {
         uint64 napWorkLimit; // Nap only: work the hamster may do before the plant wilts
         uint32 basePoints;
         uint32 unlockSnacks; // pantry size needed before anyone can plant it
+        uint8 level; // player level needed to plant it; 0 or 1 means from the start
         uint128 price; // SQK base units; 0 means free
         uint16 dailyLimit; // plantings per player per UTC day; 0 means no limit
         bool needsFreshRun;
@@ -184,6 +188,7 @@ contract SqueekGarden is Ownable {
 
     event SeedAdded(uint32 indexed seedId, string name, GrowMode mode, uint64 growAmount, uint32 basePoints, uint128 price);
     event SeedActiveSet(uint32 indexed seedId, bool active);
+    event SeedLevelSet(uint32 indexed seedId, uint8 level);
     event TreasurySet(address treasury);
     event SqueekNftSet(address squeekNft);
     event CoreSet(address core, uint64 work, uint64 blockHeight, uint64 settledRound);
@@ -206,6 +211,7 @@ contract SqueekGarden is Ownable {
     error SeedInactive(uint32 seedId);
     error SeedLocked(uint32 seedId, uint64 pantrySnacks, uint32 unlockSnacks);
     error SeedDailyLimit(uint32 seedId, uint16 dailyLimit);
+    error LevelTooLow(uint32 seedId, uint8 needed, uint256 level);
     error NotRipe(uint8 plot, uint64 progress, uint64 needed);
     error Wilted(uint8 plot);
     error NeedsFreshRun(uint8 plot);
@@ -332,14 +338,13 @@ contract SqueekGarden is Ownable {
     }
 
     function harvest(uint8 plot) external {
-        _harvest(plot, _readings(), _freshRun());
+        _harvest(plot, _readings());
     }
 
     function harvestMany(uint8[] calldata plots) external {
         Readings memory r = _readings();
-        bool fresh = _freshRun();
         for (uint256 i = 0; i < plots.length; i++) {
-            _harvest(plots[i], r, fresh);
+            _harvest(plots[i], r);
         }
     }
 
@@ -441,6 +446,25 @@ contract SqueekGarden is Ownable {
         return stats[player].points;
     }
 
+    /// @notice Points needed to reach a level. The first levels come within a day or two of play; each later one asks
+    ///         for a little more, and past level 10 every POINTS_PER_LATE_LEVEL points is another level.
+    function pointsForLevel(uint256 level) public pure returns (uint256) {
+        if (level <= 1) return 0;
+        uint32[9] memory steps = [uint32(30), 100, 250, 600, 1_800, 4_000, 7_500, 12_000, 18_000];
+        if (level <= 10) return steps[level - 2];
+        return 18_000 + (level - 10) * POINTS_PER_LATE_LEVEL;
+    }
+
+    function levelFor(uint256 pts) public pure returns (uint256 level) {
+        if (pts >= 18_000) return 10 + (pts - 18_000) / POINTS_PER_LATE_LEVEL;
+        level = 1;
+        while (pts >= pointsForLevel(level + 1)) level++;
+    }
+
+    function levelOf(address player) public view returns (uint256) {
+        return levelFor(stats[player].points);
+    }
+
     // ---------------------------------------------------------------- admin
 
     function addSeed(Seed calldata s) external onlyOwner returns (uint32) {
@@ -451,6 +475,13 @@ contract SqueekGarden is Ownable {
         _seedOf(seedId);
         _seeds[seedId - 1].active = active;
         emit SeedActiveSet(seedId, active);
+    }
+
+    /// @notice Tunes which level a seed opens at. A plant already growing is not affected.
+    function setSeedLevel(uint32 seedId, uint8 level) external onlyOwner {
+        _seedOf(seedId);
+        _seeds[seedId - 1].level = level;
+        emit SeedLevelSet(seedId, level);
     }
 
     function setTreasury(address treasury_) external onlyOwner {
@@ -500,15 +531,16 @@ contract SqueekGarden is Ownable {
     function _addDefaultSeeds() private {
         uint128 sqkUnit = 1e18;
         // Calibrated on Oct 2026 Sepolia data: ~10-13k work and ~1,000 blocks on an active night, 144 rounds a day.
-        // Paid seeds are capped per day so SQK cannot simply buy the leaderboard.
-        _addSeed(Seed("Timothy Hay", GrowMode.Work, 800, 0, 8, 0, 0, 0, false, false, true));
-        _addSeed(Seed("Sunflower", GrowMode.Work, 3_500, 0, 40, 0, 0, 0, false, false, true));
-        _addSeed(Seed("Block Broccoli", GrowMode.Blocks, 300, 0, 45, 0, 0, 0, false, false, true));
-        _addSeed(Seed("Nap Chamomile", GrowMode.Nap, 36, 300, 35, 0, 0, 0, false, false, true));
-        _addSeed(Seed("Pumpkin", GrowMode.Work, 10_000, 0, 150, 0, 0, 0, false, false, true));
-        _addSeed(Seed("Moon Melon", GrowMode.Work, 6_000, 0, 320, 150, 0, 0, true, true, true));
-        _addSeed(Seed("Golden Carrot", GrowMode.Work, 3_000, 0, 120, 0, 100 * sqkUnit, 3, false, true, true));
-        _addSeed(Seed("Hamster Berry", GrowMode.Work, 8_000, 0, 600, 0, 500 * sqkUnit, 1, false, true, true));
+        // Paid seeds are capped per day so SQK cannot simply buy the leaderboard. Each seed opens at a player level:
+        // a new one per level up to Hamster Berry at level 8.
+        _addSeed(Seed("Timothy Hay", GrowMode.Work, 800, 0, 8, 0, 1, 0, 0, false, false, true));
+        _addSeed(Seed("Sunflower", GrowMode.Work, 3_500, 0, 40, 0, 2, 0, 0, false, false, true));
+        _addSeed(Seed("Block Broccoli", GrowMode.Blocks, 300, 0, 45, 0, 3, 0, 0, false, false, true));
+        _addSeed(Seed("Nap Chamomile", GrowMode.Nap, 36, 300, 35, 0, 4, 0, 0, false, false, true));
+        _addSeed(Seed("Pumpkin", GrowMode.Work, 10_000, 0, 150, 0, 5, 0, 0, false, false, true));
+        _addSeed(Seed("Moon Melon", GrowMode.Work, 6_000, 0, 320, 150, 7, 0, 0, true, true, true));
+        _addSeed(Seed("Golden Carrot", GrowMode.Work, 3_000, 0, 120, 0, 6, 100 * sqkUnit, 3, false, true, true));
+        _addSeed(Seed("Hamster Berry", GrowMode.Work, 8_000, 0, 600, 0, 8, 500 * sqkUnit, 1, false, true, true));
     }
 
     function _addSeed(Seed memory s) private returns (uint32 seedId) {
@@ -561,6 +593,8 @@ contract SqueekGarden is Ownable {
         if (p.seedId != 0) revert PlotOccupied(plot);
         Seed storage s = _seedOf(seedId);
         if (!s.active) revert SeedInactive(seedId);
+        uint256 level = levelOf(msg.sender);
+        if (level < s.level) revert LevelTooLow(seedId, s.level, level);
         if (pantrySnacks < s.unlockSnacks) revert SeedLocked(seedId, pantrySnacks, s.unlockSnacks);
         if (s.dailyLimit > 0) {
             uint32 day = uint32(block.timestamp / 1 days);
@@ -587,7 +621,7 @@ contract SqueekGarden is Ownable {
         emit Watered(msg.sender, plot, p.waterings);
     }
 
-    function _harvest(uint8 plot, Readings memory r, bool fresh) private {
+    function _harvest(uint8 plot, Readings memory r) private {
         Plot storage p = _plotOf(msg.sender, plot);
         // Holder plots pay out only while the bound Squeek is still here; the crop waits until it is back.
         if (plot >= BASE_PLOTS && !hasSqueek(msg.sender)) revert NeedsSqueek(plot);
@@ -597,7 +631,7 @@ contract SqueekGarden is Ownable {
         PlotStatus memory st = _status(s, p, r);
         if (st.wilted) revert Wilted(plot);
         if (!st.ripe) revert NotRipe(plot, st.progress, st.needed);
-        if (s.needsFreshRun && !fresh) revert NeedsFreshRun(plot);
+        if (s.needsFreshRun && !_freshRun()) revert NeedsFreshRun(plot); // only these harvests need SqueekCore.roundPage
 
         delete _gardens[msg.sender][plot];
         pantrySnacks += 1;

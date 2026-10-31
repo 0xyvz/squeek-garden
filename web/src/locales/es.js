@@ -419,4 +419,20 @@ export default {
   "know.li3": "Las cosechas de las parcelas 10-12 solo se recogen mientras tu Squeek vinculado esté en tu billetera. Si sale, esperan a que vuelva.",
   "know.collection": "La colección se lee directamente desde su contrato en Sepolia.",
   "know.collectionLink": "La colección se lee directamente desde su contrato en Sepolia: {link}.", // html
+  // ---- levels
+  "stat.level": "Nivel",
+  "level.short": "Nv {n}",
+  "level.next": "{n} puntos más para el nivel {level}",
+  "toast.levelLocked": "{seed} necesita nivel {n}. Cosecha para ganar puntos y subir de nivel.",
+  "toast.levelUp": "¡Nivel {n}!",
+  "toast.levelUpSeed": "¡Nivel {n}! {seed} ya está en tu bolsa de semillas.",
+  "err.LevelTooLow": "tu nivel es demasiado bajo para esa semilla",
+  "toc.levels": "Niveles",
+  "levels.p1": "Tu nivel sale de tus puntos. Los primeros niveles llegan rápido; después cada nivel pide un poco más.",
+  "levels.p2": "Hasta el nivel 8, cada nivel nuevo abre una semilla nueva en tu bolsa de semillas. Algunas semillas también esperan a que se llene la despensa.",
+  "levels.after": "Después del nivel 10, cada 8.000 puntos es un nivel más.",
+  "levels.th.level": "Nivel",
+  "levels.th.points": "Puntos",
+  "levels.th.opens": "Abre",
+  "card.level": "⭐ Requiere nivel {n}",
 };

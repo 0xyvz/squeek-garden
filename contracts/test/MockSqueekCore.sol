@@ -7,6 +7,7 @@ import {ISqueekCore} from "../SqueekGarden.sol";
 contract MockSqueekCore {
     ISqueekCore.CoreState private _state;
     uint64 public recentWork;
+    bool public pageDown; // makes roundPage revert, to show which harvests depend on it
 
     function setState(uint64 work, uint64 blockHeight, uint64 settledRound, uint64 recentWork_) external {
         _state.cumulativeWork = work;
@@ -33,11 +34,16 @@ contract MockSqueekCore {
         recentWork = 0;
     }
 
+    function setPageDown(bool down) external {
+        pageDown = down;
+    }
+
     function state() external view returns (ISqueekCore.CoreState memory) {
         return _state;
     }
 
     function roundPage(uint64, uint64, uint256) external view returns (ISqueekCore.RoundPage memory page) {
+        require(!pageDown, "roundPage down");
         page.certifiedThroughRound = _state.settledThroughRound;
         page.start.cumulativeWork = _state.cumulativeWork - recentWork;
         page.end.cumulativeWork = _state.cumulativeWork;

@@ -402,4 +402,20 @@ export default {
   "know.li3": "只有当你绑定的 Squeek 在你的钱包中时，才能收获第 10-12 块地上的作物。如果它离开，作物会等它回来。",
   "know.collection": "该系列直接从其 Sepolia 上的合约读取。",
   "know.collectionLink": "该系列直接从其 Sepolia 上的合约读取：{link}。", // html
+  // ---- levels
+  "stat.level": "等级",
+  "level.short": "Lv {n}",
+  "level.next": "再得 {n} 积分升到 {level} 级",
+  "toast.levelLocked": "{seed} 需要 {n} 级。收获赚取积分来升级。",
+  "toast.levelUp": "升到 {n} 级！",
+  "toast.levelUpSeed": "升到 {n} 级！{seed} 已放进你的种子袋。",
+  "err.LevelTooLow": "你的等级还不够种这颗种子",
+  "toc.levels": "等级",
+  "levels.p1": "等级由积分决定。前几级升得很快，之后每一级需要的积分会多一些。",
+  "levels.p2": "8 级之前，每升一级，种子袋里就会多一种新种子。有些种子还要等储藏室装满。",
+  "levels.after": "10 级之后，每 8,000 积分升一级。",
+  "levels.th.level": "等级",
+  "levels.th.points": "积分",
+  "levels.th.opens": "解锁",
+  "card.level": "⭐ 需要 {n} 级",
 };

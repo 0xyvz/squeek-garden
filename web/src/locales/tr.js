@@ -419,4 +419,20 @@ export default {
   "know.li3": "10-12 numaralı parsellerdeki ürünler yalnızca bağladığın Squeek cüzdanındayken hasat edilebilir. Cüzdandan çıkarsa ürünler onu bekler.",
   "know.collection": "Koleksiyon, doğrudan Sepolia'daki sözleşmesinden okunur.",
   "know.collectionLink": "Koleksiyon, doğrudan Sepolia'daki sözleşmesinden okunur: {link}.", // html
+  // ---- levels
+  "stat.level": "Seviye",
+  "level.short": "Sv {n}",
+  "level.next": "Seviye {level} için {n} puan daha",
+  "toast.levelLocked": "{seed} için seviye {n} gerekiyor. Hasat ederek puan topla, seviye atla.",
+  "toast.levelUp": "Seviye {n}!",
+  "toast.levelUpSeed": "Seviye {n}! {seed} artık tohum kesende.",
+  "err.LevelTooLow": "seviyen bu tohum için yetmiyor",
+  "toc.levels": "Seviyeler",
+  "levels.p1": "Seviyen puanından gelir. İlk seviyeler çabuk geçer; sonrasında her seviye biraz daha fazla puan ister.",
+  "levels.p2": "8. seviyeye kadar her yeni seviye tohum kesene yeni bir tohum ekler. Bazı tohumlar ayrıca kilerin dolmasını da bekler.",
+  "levels.after": "10. seviyeden sonra her 8.000 puan bir seviye daha demek.",
+  "levels.th.level": "Seviye",
+  "levels.th.points": "Puan",
+  "levels.th.opens": "Açılan tohum",
+  "card.level": "⭐ Seviye {n} gerekir",
 };

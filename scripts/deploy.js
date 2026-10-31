@@ -20,9 +20,9 @@ async function main() {
   const receipt = await garden.deploymentTransaction().wait();
   const address = await garden.getAddress();
   console.log(`SqueekGarden deployed at ${address} (block ${receipt.blockNumber})`);
-  console.log(`readings() = ${await garden.readings()}`);
   console.log(`Verify: npx hardhat verify --network sepolia ${address} ${SQUEEK_CORE} ${SQK_TOKEN} ${squeekNft} ${treasury}`);
 
+  // Save first: a public RPC can lag a few seconds behind the deploy block, so the first read may come back empty.
   await exportAbis();
   saveDeployment("sepolia", {
     chainId: 11155111,
@@ -33,6 +33,7 @@ async function main() {
     squeekNft: SQUEEK_NFT, // the collection; whether its perk is on is read from the garden's squeekNft()
     squeekNftFromBlock: SQUEEK_DEPLOY_BLOCK,
   });
+  console.log(`readings() = ${await garden.readings().catch((e) => `not readable yet (${e.shortMessage ?? e.message})`)}`);
 }
 
 main().catch((e) => {

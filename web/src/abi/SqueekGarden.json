@@ -70,6 +70,27 @@
   {
     "inputs": [
       {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "needed",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "level",
+        "type": "uint256"
+      }
+    ],
+    "name": "LevelTooLow",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint8",
         "name": "plot",
         "type": "uint8"
@@ -603,6 +624,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "level",
+        "type": "uint8"
+      }
+    ],
+    "name": "SeedLevelSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "address",
         "name": "sqk",
@@ -813,6 +853,19 @@
   },
   {
     "inputs": [],
+    "name": "POINTS_PER_LATE_LEVEL",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "REFERRAL_PCT",
     "outputs": [
       {
@@ -896,6 +949,11 @@
             "internalType": "uint32",
             "name": "unlockSnacks",
             "type": "uint32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "level",
+            "type": "uint8"
           },
           {
             "internalType": "uint128",
@@ -1224,6 +1282,44 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "pts",
+        "type": "uint256"
+      }
+    ],
+    "name": "levelFor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "level",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "levelOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -1519,6 +1615,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "level",
+        "type": "uint256"
+      }
+    ],
+    "name": "pointsForLevel",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "readings",
     "outputs": [
@@ -1622,6 +1737,11 @@
             "type": "uint32"
           },
           {
+            "internalType": "uint8",
+            "name": "level",
+            "type": "uint8"
+          },
+          {
             "internalType": "uint128",
             "name": "price",
             "type": "uint128"
@@ -1703,6 +1823,11 @@
             "internalType": "uint32",
             "name": "unlockSnacks",
             "type": "uint32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "level",
+            "type": "uint8"
           },
           {
             "internalType": "uint128",
@@ -1791,6 +1916,24 @@
       }
     ],
     "name": "setSeedActive",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "seedId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "level",
+        "type": "uint8"
+      }
+    ],
+    "name": "setSeedLevel",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

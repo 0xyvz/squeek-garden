@@ -16,16 +16,22 @@ nobody can speed a plant up. Every action is a transaction.
   only while the bound Squeek is in the wallet, so one NFT passed around cannot open holder plots in many wallets.
 - **Seeds** are hamster snacks, and each one grows from a different thing the hamster does:
 
-  | Seed | Grows with | Needs | Points | Notes |
-  |---|---|---|---|---|
-  | Timothy Hay | wheel work | 800 (~0.7 km) | 8 | starter |
-  | Sunflower | wheel work | 3,500 (~3 km) | 40 | |
-  | Block Broccoli | Squeekchain blocks | 300 blocks | 45 | pace follows chain difficulty |
-  | Nap Chamomile | settled rounds while he rests | 36 rounds (6 h) | 35 | wilts if he runs >300 work first |
-  | Pumpkin | wheel work | 10,000 (~9 km) | 150 | a full night |
-  | Moon Melon | wheel work | 6,000 | 320 | unlocks at 150 pantry snacks; pick only right after a run |
-  | Golden Carrot | wheel work | 3,000 | 120 | 100 SQK, 3 a day per player |
-  | Hamster Berry | wheel work | 8,000 | 600 | 500 SQK, 1 a day per player |
+  | Seed | Level | Grows with | Needs | Points | Notes |
+  |---|---|---|---|---|---|
+  | Timothy Hay | 1 | wheel work | 800 (~0.7 km) | 8 | starter |
+  | Sunflower | 2 | wheel work | 3,500 (~3 km) | 40 | |
+  | Block Broccoli | 3 | Squeekchain blocks | 300 blocks | 45 | pace follows chain difficulty |
+  | Nap Chamomile | 4 | settled rounds while he rests | 36 rounds (6 h) | 35 | wilts if he runs >300 work first |
+  | Pumpkin | 5 | wheel work | 10,000 (~9 km) | 150 | a full night |
+  | Golden Carrot | 6 | wheel work | 3,000 | 120 | 100 SQK, 3 a day per player |
+  | Moon Melon | 7 | wheel work | 6,000 | 320 | unlocks at 150 pantry snacks; pick only right after a run |
+  | Hamster Berry | 8 | wheel work | 8,000 | 600 | 500 SQK, 1 a day per player |
+
+- **Levels** come from a player's points (`levelOf`, `pointsForLevel`): 30, 100, 250 and 600 points for levels
+  2-5, so the first ones come within a day or two, then 1,800 / 4,000 / 7,500 / 12,000 / 18,000 for levels 6-10 and
+  one more level per 8,000 points after that. A seed can only be planted from its level on; the owner can move a seed
+  to another level with `setSeedLevel` without a redeploy. Only Moon Melon's fresh-run check reads
+  `SqueekCore.roundPage`, so other harvests never depend on it.
 
 - **Water** your own plant up to 3 times, an hour apart: +10% each.
 - **Neighbours** can water your plant once a day (3 times in all): +5% for you, +2 points for them,

@@ -421,4 +421,20 @@ export default {
   "know.li3": "Crops on plots 10-12 are harvested only while your bound Squeek is in your wallet. If it leaves, they wait for it.",
   "know.collection": "The collection is read straight from its contract on Sepolia.",
   "know.collectionLink": "The collection is read straight from its contract on Sepolia: {link}.", // html
+  // ---- levels
+  "stat.level": "Level",
+  "level.short": "Lv {n}",
+  "level.next": "{n} more points to level {level}",
+  "toast.levelLocked": "{seed} needs level {n}. Harvest to earn points and level up.",
+  "toast.levelUp": "Level {n}!",
+  "toast.levelUpSeed": "Level {n}! {seed} is now in your seed bag.",
+  "err.LevelTooLow": "your level is too low for that seed",
+  "toc.levels": "Levels",
+  "levels.p1": "Your level comes from your points. The first levels come quickly; after that each level asks for a little more.",
+  "levels.p2": "Up to level 8, each new level opens a new seed in your seed bag. Some seeds also wait for the pantry to fill.",
+  "levels.after": "After level 10, every 8,000 points is one more level.",
+  "levels.th.level": "Level",
+  "levels.th.points": "Points",
+  "levels.th.opens": "Opens",
+  "card.level": "⭐ Needs level {n}",
 };

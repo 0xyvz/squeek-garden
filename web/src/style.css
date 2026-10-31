@@ -354,6 +354,26 @@ input {
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
 }
 
+.stat.level {
+  min-width: 64px;
+}
+
+.level-bar {
+  height: 4px;
+  margin: 1px 0 4px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  overflow: hidden;
+}
+
+.level-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.5s ease;
+}
+
 /* ------------------------------------------------------------ stage: hamster house + pantry */
 
 .stage {
@@ -1772,7 +1792,9 @@ img.px,
 
 .tabs {
   display: flex;
+  flex-wrap: wrap; /* longer labels (Turkish, Spanish) wrap on phones instead of widening the page */
   gap: 4px;
+  max-width: 100%;
   padding: 3px;
   border-radius: 12px;
   background: var(--surface-2);
@@ -1843,6 +1865,16 @@ img.px,
   border-radius: 99px;
   background: var(--accent);
   color: var(--accent-ink);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.board .lvl {
+  flex: none;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--muted);
   font-size: 0.68rem;
   font-weight: 700;
 }
@@ -2223,11 +2255,16 @@ body.tx-busy .chip.who::after {
 
   .top-right {
     width: 100%;
+    flex-wrap: wrap;
     justify-content: space-between;
   }
 
+  /* Language and sound on the first row, the player's name, level, points and SQK on a full row below. */
   .wallet {
+    order: 1;
+    flex: 1 0 100%;
     flex-wrap: nowrap;
+    justify-content: space-between;
     gap: 6px;
     min-width: 0;
   }
@@ -2239,7 +2276,8 @@ body.tx-busy .chip.who::after {
     white-space: nowrap;
   }
 
-  .stat {
+  .stat,
+  .stat.level {
     min-width: 0;
     padding: 3px 10px;
   }
@@ -2461,6 +2499,38 @@ a.button.primary {
   font-family: var(--num);
   font-weight: 600;
   text-align: center;
+}
+
+.level-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.level-table th,
+.level-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+}
+
+.level-table th {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.level-table td:nth-child(-n + 2) {
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.level-table svg {
+  width: 18px;
+  height: 18px;
+  vertical-align: -4px;
 }
 
 .doc details {
