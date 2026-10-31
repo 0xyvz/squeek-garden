@@ -25,6 +25,7 @@ initNav();
 const BASE_PLOTS = 9;
 const MAX_PLOTS = 12;
 const MAX_WATERINGS = 3;
+const LIVE_STREAM_URL = "https://x.com/squeekchain"; // Squeekchain goes live on X while the hamster runs
 const WATER_COOLDOWN = 3600;
 const MAX_HELPS = 3;
 const WATER_BONUS = 10n;
@@ -880,6 +881,12 @@ function renderTop() {
   $("mute").setAttribute("aria-label", isMuted() ? t("sound.off") : t("sound.on"));
 }
 
+/** The stage badge; while the hamster runs it is a play button to Squeekchain's live stream on X. */
+function stageBadge(running, night) {
+  if (!running) return `<span class="badge">${night ? t("stage.night") : t("stage.day")}</span>`;
+  return `<a class="badge live watch" href="${LIVE_STREAM_URL}" target="_blank" rel="noopener" aria-label="${t("stage.watchLive")}"><svg class="play" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 1.5v7l6-3.5z"/></svg>${t("stage.live")}</a>`;
+}
+
 function renderStage() {
   const h = state.hamster;
   const running = Boolean(h?.running);
@@ -894,7 +901,7 @@ function renderStage() {
     : running
       ? t("stage.detailRun", { kmh: h.kmh.toFixed(1), today: h.todayKm.toFixed(2) })
       : t("stage.detailNap", { today: h.todayKm.toFixed(2) });
-  const badge = running ? t("stage.live") : night ? t("stage.night") : t("stage.day");
+  const badge = stageBadge(running, night);
   const snacks = tp("pantry.snacks", Number(state.pantry), { n: fmt(state.pantry) });
 
   const nextSeed = state.seeds
@@ -908,7 +915,7 @@ function renderStage() {
     : "";
 
   const info = `<div class="hamster-info">
-      <span class="badge ${running ? "live" : ""}">${badge}</span>
+      ${badge}
       <strong>${label}</strong>
       <p>${detail}</p>
       <div class="readings">
@@ -940,13 +947,13 @@ function renderStage() {
     paint(
       "stage",
       `<div class="stage-card ${art}">
-        <div class="scene" style="--hero:url(${heroURL(art)})" role="img" aria-label="${art === "night" ? t("scene.ariaNight") : t("scene.aria")}">
+        <div class="scene" style="--hero:url(${heroURL(art)})">
           <div class="scene-status">
-            <span class="badge ${running ? "live" : ""}">${badge}</span>
+            ${badge}
             <strong>${label}</strong>
             <p>${sceneDetail}</p>
           </div>
-          <div class="scene-hamster">${hamsterArt(spin)}</div>
+          <div class="scene-hamster" role="img" aria-label="${art === "night" ? t("scene.ariaNight") : t("scene.aria")}">${hamsterArt(spin)}</div>
         </div>
         <div class="hud">
           <div class="hud-item hud-work"><span>${t("hud.work")}</span><b>${r ? fmt(r.work) : "…"}</b></div>
