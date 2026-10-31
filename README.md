@@ -121,4 +121,4 @@ FORK_SEPOLIA=1 npx hardhat run scripts/fork-check.js
 3. `npm run deploy:sepolia`. This writes the address into `web/src/deployments.json`.
 4. With `ETHERSCAN_API_KEY` in `.env`, run the `npx hardhat verify ...` line the deploy printed so the source shows
    on Sepolia Etherscan (give it a minute after the deploy).
-5. `npm --prefix web run build` and host `web/dist`.
+5. `npm run build` and host `dist/` (relative paths, so any folder or IPFS gateway works).

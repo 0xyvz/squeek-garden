@@ -7,7 +7,8 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
-    "web": "npm --prefix web run dev"
+    "web": "npm --prefix web run dev",
+    "build": "npm --prefix web ci && npm --prefix web run build"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
