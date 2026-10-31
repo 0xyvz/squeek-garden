@@ -9,6 +9,7 @@ import {
   deployment,
   publicClient,
   connectWallet,
+  restoreWallet,
   onWalletChange,
   fetchHamster,
   fetchTypicalNight,
@@ -1539,11 +1540,22 @@ document.addEventListener("submit", (ev) => {
   if (ev.target.id === "visit") visit(new FormData(ev.target).get("name") ?? "");
 });
 
-onWalletChange(() => location.reload());
-refresh().then(() => {
-  const g = new URLSearchParams(location.search).get("g");
-  if (g && deployment) visit(g);
+// Connecting fires these events too, so only a change to an already connected wallet reloads the page; the reload
+// then reconnects silently through restoreWallet().
+onWalletChange((kind, value) => {
+  if (!state.account) return;
+  if (kind === "accounts" && value[0]?.toLowerCase() === me()) return;
+  if (kind === "chain" && parseInt(value, 16) === net.chain.id) return; // the switch our own connect asked for
+  location.reload();
 });
+restoreWallet()
+  .then((restored) => restored && Object.assign(state, restored))
+  .catch(() => {})
+  .then(refresh)
+  .then(() => {
+    const g = new URLSearchParams(location.search).get("g");
+    if (g && deployment) visit(g);
+  });
 setInterval(refresh, net.pollMs);
 // Re-render once a minute so watering cooldowns and "ago" times stay current between chain changes.
 setInterval(render, 60_000);

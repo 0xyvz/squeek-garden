@@ -38,6 +38,9 @@ export const logsClient = isLocal
   ? publicClient
   : createPublicClient({ chain: net.chain, transport: http("https://sepolia.gateway.tenderly.co") });
 
+// Set after a connect, so the next page load (or a reload after the wallet switches account) reconnects silently.
+const WALLET_KEY = "squeek-garden:wallet";
+
 /** Returns { account, walletClient } or throws with a message fit for the UI. */
 export async function connectWallet() {
   if (isLocal) {
@@ -47,6 +50,25 @@ export async function connectWallet() {
   if (!window.ethereum) throw new Error(t("err.noWallet"));
   const [account] = await window.ethereum.request({ method: "eth_requestAccounts" });
   await ensureSepolia();
+  try {
+    localStorage.setItem(WALLET_KEY, "1");
+  } catch {
+    /* storage unavailable: the player connects again after a reload */
+  }
+  return { account, walletClient: createWalletClient({ account, chain: net.chain, transport: custom(window.ethereum) }) };
+}
+
+/** Reconnects a wallet this site was connected to before, without any prompt; null when that is not possible. */
+export async function restoreWallet() {
+  if (isLocal || !window.ethereum) return null;
+  try {
+    if (localStorage.getItem(WALLET_KEY) !== "1") return null;
+  } catch {
+    return null;
+  }
+  const [account] = await window.ethereum.request({ method: "eth_accounts" }).catch(() => []);
+  const chainId = await window.ethereum.request({ method: "eth_chainId" }).catch(() => null);
+  if (!account || parseInt(chainId, 16) !== sepolia.id) return null;
   return { account, walletClient: createWalletClient({ account, chain: net.chain, transport: custom(window.ethereum) }) };
 }
 
@@ -73,10 +95,11 @@ async function ensureSepolia() {
   }
 }
 
+/** Calls handler("accounts", [address, ...]) or handler("chain", chainIdHex) when the wallet changes. */
 export function onWalletChange(handler) {
   if (isLocal || !window.ethereum?.on) return;
-  window.ethereum.on("accountsChanged", handler);
-  window.ethereum.on("chainChanged", handler);
+  window.ethereum.on("accountsChanged", (accounts) => handler("accounts", accounts));
+  window.ethereum.on("chainChanged", (chainId) => handler("chain", chainId));
 }
 
 /** Live wheel readings from the public Squeekchain API. Settled on-chain values lag these by 5-20 minutes. */
