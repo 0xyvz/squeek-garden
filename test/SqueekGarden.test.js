@@ -296,6 +296,14 @@ describe("SqueekGarden", function () {
       }
     });
 
+    it("matches the site's copy of the level table (web/src/levels.js)", async function () {
+      const { garden } = await loadFixture(deployLeveledGarden);
+      const web = await import(require("url").pathToFileURL(require("path").join(__dirname, "..", "web", "src", "levels.js")).href);
+      for (let level = 1; level <= 25; level++) expect(BigInt(web.pointsForLevel(level))).to.equal(await garden.pointsForLevel(level));
+      const samples = [0, 1, 29, 30, 99, 100, 599, 600, 1_799, 4_000, 17_999, 18_000, 25_999, 26_000, 1_000_000];
+      for (const pts of samples) expect(BigInt(web.levelFor(pts))).to.equal(await garden.levelFor(pts));
+    });
+
     it("opens one seed per level, up to Hamster Berry at level 8", async function () {
       const { garden } = await loadFixture(deployLeveledGarden);
       expect((await garden.seeds()).map((s) => s.level)).to.deep.equal([1n, 2n, 3n, 4n, 5n, 7n, 6n, 8n]);
@@ -427,9 +435,16 @@ describe("SqueekGarden", function () {
       const { garden, alice, bob } = await loadFixture(deployGarden);
       await garden.connect(alice).setNickname("rude_name");
       await expect(garden.connect(bob).clearNickname(alice.address)).to.be.revertedWithCustomError(garden, "OwnableUnauthorizedAccount");
-      await garden.clearNickname(alice.address);
+      await expect(garden.clearNickname(alice.address)).to.emit(garden, "NicknameBanned").withArgs("rude_name", true);
       expect(await garden.nicknameOf(alice.address)).to.equal("");
+      // A cleared name is banned for everyone, the player who had it included, until the owner lifts the ban.
+      await expect(garden.connect(bob).setNickname("rude_name")).to.be.revertedWithCustomError(garden, "NicknameTaken");
+      await expect(garden.connect(alice).setNickname("rude_name")).to.be.revertedWithCustomError(garden, "NicknameTaken");
+      await expect(garden.connect(bob).setNicknameBanned("rude_name", false)).to.be.revertedWithCustomError(garden, "OwnableUnauthorizedAccount");
+      await garden.setNicknameBanned("rude_name", false);
       await garden.connect(bob).setNickname("rude_name");
+      await garden.setNicknameBanned("another_bad", true);
+      await expect(garden.connect(alice).setNickname("another_bad")).to.be.revertedWithCustomError(garden, "NicknameTaken");
     });
 
     it("pages players with their nickname and stats", async function () {
@@ -566,6 +581,75 @@ describe("SqueekGarden", function () {
       await expect(garden.addSeed(["Instant", 0, 0, 0, 1, 0, 1, 0, 0, false, false, true])).to.be.revertedWithCustomError(garden, "ZeroGrowAmount");
       await garden.addSeed(seed);
       expect(await garden.seedCount()).to.equal(9);
+      expect((await garden.seed(9)).name).to.equal("Weed");
+      await expect(garden.seed(0)).to.be.revertedWithCustomError(garden, "UnknownSeed");
+    });
+
+    it("moves the treasury, and paid seeds pay the new one", async function () {
+      const { garden, sqk, alice, bob, treasury } = await loadFixture(deployGarden);
+      await expect(garden.setTreasury(ethers.ZeroAddress)).to.be.revertedWithCustomError(garden, "ZeroAddress");
+      await expect(garden.setTreasury(bob.address)).to.emit(garden, "TreasurySet").withArgs(bob.address);
+      await sqk.mint(alice.address, 100n * SQK);
+      await sqk.connect(alice).approve(garden, 100n * SQK);
+      await expect(garden.connect(alice).plant(0, GOLDEN_CARROT)).to.changeTokenBalances(sqk, [alice, bob, treasury], [-100n * SQK, 100n * SQK, 0]);
+    });
+
+    it("refuses a zero core, SQK or treasury at deployment", async function () {
+      const { core, sqk, nft, treasury } = await loadFixture(deployGarden);
+      const Garden = await ethers.getContractFactory("SqueekGarden");
+      for (const args of [
+        [ethers.ZeroAddress, sqk, nft, treasury.address],
+        [core, ethers.ZeroAddress, nft, treasury.address],
+        [core, sqk, nft, ethers.ZeroAddress],
+      ]) {
+        await expect(Garden.deploy(...args)).to.be.revertedWithCustomError(Garden, "ZeroAddress");
+      }
+      await Garden.deploy(core, sqk, ethers.ZeroAddress, treasury.address); // no NFT collection is fine: holder plots off
+    });
+  });
+
+  describe("small views and batches", function () {
+    it("waters several plants in one go and reports empty plots as empty", async function () {
+      const { garden, alice } = await loadFixture(deployGarden);
+      await garden.connect(alice).plantMany([0, 1, 2], HAY);
+      await garden.connect(alice).waterMany([0, 1, 2]);
+      const plots = await garden.garden(alice.address);
+      expect(plots.slice(0, 3).map((p) => p.waterings)).to.deep.equal([1n, 1n, 1n]);
+      await expect(garden.connect(alice).waterMany([0, 5])).to.be.revertedWithCustomError(garden, "WaterCooldown");
+      expect(await garden.plotStatus(alice.address, 5)).to.deep.equal([0n, 0n, false, false, false, 0n]);
+    });
+
+    it("tells when a Squeek can move to another garden", async function () {
+      const { garden, nft, alice } = await loadFixture(deployGarden);
+      const tokenId = await nft.mint.staticCall(alice.address);
+      await nft.mint(alice.address);
+      expect(await garden.squeekMovableAt(tokenId)).to.equal(0); // never bound
+      await garden.connect(alice).bindSqueek(tokenId);
+      const readyAt = await garden.squeekMovableAt(tokenId);
+      expect(readyAt).to.equal(BigInt(await time.latest()) + 7n * 86_400n);
+      await time.increaseTo(readyAt);
+      expect(await garden.squeekMovableAt(tokenId)).to.equal(0); // cooldown over
+    });
+
+    it("refuses binding while holder plots are off, and a zero SQK token", async function () {
+      const { garden, alice } = await loadFixture(deployGarden);
+      await garden.setSqueekNft(ethers.ZeroAddress);
+      await expect(garden.connect(alice).bindSqueek(1)).to.be.revertedWithCustomError(garden, "HolderPlotsOff");
+      await expect(garden.setSqk(ethers.ZeroAddress)).to.be.revertedWithCustomError(garden, "ZeroAddress");
+    });
+
+    it("counts block plants as not grown when the block counter falls below the planting", async function () {
+      const { garden, core, alice } = await loadFixture(deployGarden);
+      await garden.connect(alice).plant(0, BROCCOLI); // planted at block 4,000
+      await core.setState(45_000, 3_000, 500, 0);
+      expect((await garden.plotStatus(alice.address, 0)).progress).to.equal(0n);
+    });
+
+    it("checks the fresh run from round 0 while fewer than three rounds have settled", async function () {
+      const { garden, core } = await loadFixture(deployGarden);
+      await core.setState(1_000, 10, 2, 0);
+      const [, recentWork] = await garden.readings();
+      expect(recentWork).to.equal(0n);
     });
   });
 });

@@ -149,6 +149,11 @@
   },
   {
     "inputs": [],
+    "name": "OldCoreUnreadable",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "OwnGarden",
     "type": "error"
   },
@@ -198,12 +203,22 @@
   },
   {
     "inputs": [],
+    "name": "ReadingsGoBack",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "ReferrerAlreadySet",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "ReferrerTooLate",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "RenounceDisabled",
     "type": "error"
   },
   {
@@ -437,6 +452,25 @@
       }
     ],
     "name": "Helped",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "nickname",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "banned",
+        "type": "bool"
+      }
+    ],
+    "name": "NicknameBanned",
     "type": "event"
   },
   {
@@ -1320,6 +1354,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "nicknameBanned",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -1691,7 +1744,7 @@
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1879,12 +1932,65 @@
   {
     "inputs": [
       {
+        "internalType": "contract ISqueekCore",
+        "name": "core_",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "work",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "blockHeight",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settledRound",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct SqueekGarden.Readings",
+        "name": "last",
+        "type": "tuple"
+      }
+    ],
+    "name": "setCoreFrom",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "nickname",
         "type": "string"
       }
     ],
     "name": "setNickname",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "nickname",
+        "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "banned",
+        "type": "bool"
+      }
+    ],
+    "name": "setNicknameBanned",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

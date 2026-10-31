@@ -1,7 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
-const { SEPOLIA_RPC_URL, DEPLOYER_PRIVATE_KEY, FORK_SEPOLIA, ETHERSCAN_API_KEY } = process.env;
+const { SEPOLIA_RPC_URL, DEPLOYER_PRIVATE_KEY, FORK_SEPOLIA, FORK_BLOCK, ETHERSCAN_API_KEY } = process.env;
 const sepoliaRpc = SEPOLIA_RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com";
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -14,8 +14,8 @@ module.exports = {
     },
   },
   networks: {
-    // FORK_SEPOLIA=1 runs the local network on a copy of Sepolia, with the real SqueekCore and SQK.
-    hardhat: FORK_SEPOLIA ? { forking: { url: sepoliaRpc }, chainId: 11155111 } : {},
+    // FORK_SEPOLIA=1 runs the local network on a copy of Sepolia, with the real SqueekCore and SQK (FORK_BLOCK pins the block).
+    hardhat: FORK_SEPOLIA ? { forking: { url: sepoliaRpc, blockNumber: FORK_BLOCK ? Number(FORK_BLOCK) : undefined }, chainId: 11155111 } : {},
     sepolia: {
       url: sepoliaRpc,
       accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],

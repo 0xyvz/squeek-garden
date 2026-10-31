@@ -46,7 +46,10 @@ nobody can speed a plant up. Every action is a transaction.
 
 - **Squeekchain reinstall**: the owner can move the garden to a new SqueekCore (`setCore`) and SQK token (`setSqk`).
   Garden readings stay continuous (`reading = carried + (counter - base)`, see `coreMapping()`), so growing plants keep
-  their progress and carry on with the new hamster counters. After a reinstall also update `GENESIS_TS` in
+  their progress and carry on with the new hamster counters. If the old core no longer answers (or reset its counters
+  in place), `setCore` refuses with `OldCoreUnreadable`; then call `setCoreFrom(newCore, lastReadings)` with the
+  garden's `readings()` read at a block before the old core stopped. Ownership cannot be renounced, so this stays
+  reachable; `clearNickname` also bans the name (`setNicknameBanned` lifts it). After a reinstall also update `GENESIS_TS` in
   `web/src/main.js` (the live nap estimate) and `scripts/squeekchain.js`.
 
 - Paid seeds carry a `dailyLimit` (plantings per player per UTC day) so SQK alone cannot buy the leaderboard;

@@ -16,7 +16,13 @@ async function main() {
   console.log(`Treasury for SQK seed payments: ${treasury}`);
   console.log(`Squeek NFT holder plots: ${squeekNft === ethers.ZeroAddress ? "off" : "on"}`);
 
-  const garden = await ethers.deployContract("SqueekGarden", [SQUEEK_CORE, SQK_TOKEN, squeekNft, treasury]);
+  // Sepolia's base fee is close to zero, but the default 1 gwei tip makes this ~38M-gas deploy cost ~0.04 ETH; a small
+  // tip gets in just as well. TIP_GWEI overrides it if blocks ever fill up.
+  const tip = ethers.parseUnits(process.env.TIP_GWEI || "0.05", "gwei");
+  const { maxFeePerGas } = await ethers.provider.getFeeData();
+  const fees = { maxPriorityFeePerGas: tip, maxFeePerGas: maxFeePerGas * 2n + tip };
+
+  const garden = await ethers.deployContract("SqueekGarden", [SQUEEK_CORE, SQK_TOKEN, squeekNft, treasury], fees);
   const receipt = await garden.deploymentTransaction().wait();
   const address = await garden.getAddress();
   console.log(`SqueekGarden deployed at ${address} (block ${receipt.blockNumber})`);

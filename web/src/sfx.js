@@ -102,5 +102,6 @@ export const sfx = {
 };
 
 export function buzz(ms = 12) {
-  if (!muted) navigator.vibrate?.(ms);
+  // Browsers refuse (and log an error for) vibration before the visitor has touched the page.
+  if (!muted && navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(ms);
 }

@@ -159,6 +159,7 @@ contract SqueekGarden is Ownable {
     mapping(address => PlayerStats) public stats;
     mapping(address => string) public nicknameOf;
     mapping(bytes32 => address) public nicknameOwner;
+    mapping(bytes32 => bool) public nicknameBanned; // names the owner took down; nobody can pick them again
     mapping(address => mapping(uint32 => uint8)) public helpsOnDay;
     mapping(address => mapping(uint32 => mapping(uint32 => uint16))) private _plantedOnDay; // player => seed => day
     address[] private _players;
@@ -195,6 +196,7 @@ contract SqueekGarden is Ownable {
     event SqkSet(address sqk);
     event SqueekBound(address indexed player, uint256 indexed tokenId);
     event NicknameSet(address indexed player, string nickname);
+    event NicknameBanned(string nickname, bool banned);
     event Planted(address indexed player, uint8 plot, uint32 indexed seedId, uint64 atWork, uint128 paid);
     event Watered(address indexed player, uint8 plot, uint8 waterings);
     event Helped(address indexed helper, address indexed owner, uint8 plot);
@@ -230,6 +232,9 @@ contract SqueekGarden is Ownable {
     error HolderPlotsOff();
     error NotSqueekOwner(uint256 tokenId);
     error SqueekMoveCooldown(uint256 tokenId, uint64 readyAt);
+    error OldCoreUnreadable();
+    error ReadingsGoBack();
+    error RenounceDisabled();
 
     /// @param squeekNft_ Squeek NFT collection whose holders get three extra plots; address(0) starts with them off.
     constructor(ISqueekCore core_, IERC20 sqk_, ISqueekNft squeekNft_, address treasury_) Ownable(msg.sender) {
@@ -255,7 +260,7 @@ contract SqueekGarden is Ownable {
         }
         bytes32 key = keccak256(b);
         address holder = nicknameOwner[key];
-        if (holder != address(0) && holder != msg.sender) revert NicknameTaken();
+        if ((holder != address(0) && holder != msg.sender) || nicknameBanned[key]) revert NicknameTaken();
         _releaseNickname(msg.sender);
         nicknameOwner[key] = msg.sender;
         nicknameOf[msg.sender] = nickname;
@@ -433,7 +438,7 @@ contract SqueekGarden is Ownable {
     function playersPage(uint256 offset, uint256 limit) external view returns (PlayerView[] memory page) {
         uint256 n = _players.length;
         if (offset >= n) return new PlayerView[](0);
-        uint256 end = offset + limit > n ? n : offset + limit;
+        uint256 end = limit > n - offset ? n : offset + limit; // no overflow on a huge limit
         page = new PlayerView[](end - offset);
         for (uint256 i = offset; i < end; i++) {
             address a = _players[i];
@@ -498,19 +503,21 @@ contract SqueekGarden is Ownable {
     }
 
     /// @notice Moves the garden to a new SqueekCore (after a Squeekchain reinstall). Growing plants keep the progress
-    ///         they had; from here on they grow with the new core. If the old core no longer answers, progress since
-    ///         the last switch cannot be read and is lost; nothing else is.
+    ///         they had; from here on they grow with the new core. Needs the old core to still answer; if it does not,
+    ///         use setCoreFrom.
     function setCore(ISqueekCore core_) external onlyOwner {
-        if (address(core_) == address(0)) revert ZeroAddress();
-        Readings memory carried = _carried;
-        try core.state() returns (ISqueekCore.CoreState memory s) {
-            carried = _toGarden(s);
-        } catch {}
-        ISqueekCore.CoreState memory fresh = core_.state(); // also checks the new address speaks SqueekCore
-        _base = Readings(fresh.cumulativeWork, fresh.blockHeight, fresh.settledThroughRound);
-        _carried = carried;
-        core = core_;
-        emit CoreSet(address(core_), carried.work, carried.blockHeight, carried.settledRound);
+        (bool ok, Readings memory carried) = _tryReadings();
+        if (!ok) revert OldCoreUnreadable();
+        _switchCore(core_, carried);
+    }
+
+    /// @notice Rescue for when the old core no longer answers, answers garbage, or reset its counters in place: carries
+    ///         the garden on from readings the owner read before that happened (readings() called at an earlier
+    ///         block). They may not go below what was already carried. Also works with the same core, as a rebase.
+    function setCoreFrom(ISqueekCore core_, Readings calldata last) external onlyOwner {
+        Readings memory c = _carried;
+        if (last.work < c.work || last.blockHeight < c.blockHeight || last.settledRound < c.settledRound) revert ReadingsGoBack();
+        _switchCore(core_, last);
     }
 
     /// @notice Switches the token paid seeds are bought with (after a Squeekchain reinstall).
@@ -520,10 +527,25 @@ contract SqueekGarden is Ownable {
         emit SqkSet(address(sqk_));
     }
 
-    /// @notice Moderation: frees an offensive nickname.
+    /// @notice Moderation: frees an offensive nickname and bans it, so it cannot simply be picked again.
     function clearNickname(address player) external onlyOwner {
+        bytes memory old = bytes(nicknameOf[player]);
+        if (old.length == 0) return;
+        nicknameBanned[keccak256(old)] = true;
+        emit NicknameBanned(nicknameOf[player], true);
         _releaseNickname(player);
         emit NicknameSet(player, "");
+    }
+
+    /// @notice Bans a nickname ahead of time, or lifts a ban. A player already using it keeps it until cleared.
+    function setNicknameBanned(string calldata nickname, bool banned) external onlyOwner {
+        nicknameBanned[keccak256(bytes(nickname))] = banned;
+        emit NicknameBanned(nickname, banned);
+    }
+
+    /// @notice Disabled: without an owner the garden could never follow a Squeekchain reinstall (setCore).
+    function renounceOwnership() public pure override {
+        revert RenounceDisabled();
     }
 
     // ---------------------------------------------------------------- internals
@@ -552,6 +574,24 @@ contract SqueekGarden is Ownable {
 
     function _readings() private view returns (Readings memory) {
         return _toGarden(core.state());
+    }
+
+    /// @dev The current core's readings, or ok = false if it reverts, has no code or answers with data that does not
+    ///      decode (a failed decode would otherwise revert here, outside any try/catch).
+    function _tryReadings() private view returns (bool ok, Readings memory r) {
+        bytes memory ret;
+        (ok, ret) = address(core).staticcall(abi.encodeCall(ISqueekCore.state, ()));
+        if (!ok || ret.length < 256) return (false, r); // CoreState is eight static words
+        r = _toGarden(abi.decode(ret, (ISqueekCore.CoreState)));
+    }
+
+    function _switchCore(ISqueekCore core_, Readings memory carried) private {
+        if (address(core_) == address(0)) revert ZeroAddress();
+        ISqueekCore.CoreState memory fresh = core_.state(); // also checks the new address speaks SqueekCore
+        _base = Readings(fresh.cumulativeWork, fresh.blockHeight, fresh.settledThroughRound);
+        _carried = carried;
+        core = core_;
+        emit CoreSet(address(core_), carried.work, carried.blockHeight, carried.settledRound);
     }
 
     /// @dev A counter below its base (a reset on the same core) counts as no progress since the switch.

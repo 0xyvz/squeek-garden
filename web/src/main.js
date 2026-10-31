@@ -750,22 +750,28 @@ function openNameDialog() {
     check.textContent = "…";
     setTimeout(async () => {
       if (mine !== seq) return;
-      const owner = await read("nicknameOwner", [keccak256(toBytes(name))]).catch(() => null);
+      const key = keccak256(toBytes(name));
+      const [owner, banned] = await Promise.all([read("nicknameOwner", [key]).catch(() => null), read("nicknameBanned", [key]).catch(() => false)]);
       if (mine !== seq) return;
-      const free = owner === null || BigInt(owner) === 0n || owner.toLowerCase() === me();
+      const free = !banned && (owner === null || BigInt(owner) === 0n || owner.toLowerCase() === me());
       check.classList.add(free ? "ok" : "bad");
       check.textContent = t(free ? "profile.free" : "profile.taken", { name });
       save.disabled = !free;
     }, 300);
   });
+  // Removed right away rather than on "close" alone, which some embedded browsers never fire.
+  const done = () => {
+    if (dlg.open) dlg.close();
+    dlg.remove();
+  };
   dlg.addEventListener("submit", async (ev) => {
     ev.preventDefault(); // the page-wide submit handler cancels method="dialog" anyway, so the dialog closes itself
-    if (ev.submitter?.value !== "save") return dlg.close();
+    if (ev.submitter?.value !== "save") return done();
     save.disabled = true;
-    if (await saveNickname(input.value)) dlg.close();
+    if (await saveNickname(input.value)) done();
     else save.disabled = false;
   });
-  dlg.addEventListener("close", () => dlg.remove());
+  dlg.addEventListener("close", () => dlg.remove()); // Escape
   dlg.showModal();
   input.focus();
 }
