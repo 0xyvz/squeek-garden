@@ -354,22 +354,22 @@ input {
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
 }
 
+/* The bar to the next level runs along the box's bottom edge, so the level box keeps the other boxes' size. */
 .stat.level {
-  min-width: 64px;
+  position: relative;
+  overflow: hidden;
 }
 
 .level-bar {
-  height: 4px;
-  margin: 1px 0 4px;
-  border-radius: 99px;
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
   background: color-mix(in srgb, var(--text) 12%, transparent);
-  overflow: hidden;
 }
 
 .level-bar i {
   display: block;
   height: 100%;
-  border-radius: inherit;
   background: var(--accent);
   transition: width 0.5s ease;
 }
@@ -2276,8 +2276,8 @@ body.tx-busy .chip.who::after {
     white-space: nowrap;
   }
 
-  .stat,
-  .stat.level {
+  .stat {
+    flex: 1 1 0; /* level, points and SQK share the row equally */
     min-width: 0;
     padding: 3px 10px;
   }
