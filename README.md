@@ -11,7 +11,8 @@ nobody can speed a plant up. Every action is a transaction.
 - Connect a wallet, pick a gardener **nickname** (on-chain, unique, 3-16 of `a-z 0-9 _`); a window asks once, right
   after the first connect.
 - Each wallet has **9 plots**; a player who binds a Squeek NFT to their garden (`bindSqueek(tokenId)`) gets **12** once
-  the owner switches holder plots on (`setSqueekNft`; off at launch unless `SQUEEK_NFT_PERK=on`). A Squeek serves one
+  the owner switches holder plots on (`setSqueekNft`; off at launch unless `SQUEEK_NFT_PERK=on`). Any ERC-721 with
+  `ownerOf` works, and the NFT page reads the collection from the garden, so a new collection needs no site change. A Squeek serves one
   garden at a time and can move to another garden only 7 days after its last binding; plots 10-12 plant and harvest
   only while the bound Squeek is in the wallet, so one NFT passed around cannot open holder plots in many wallets.
 - **Seeds** are hamster snacks, and each one grows from a different thing the hamster does:

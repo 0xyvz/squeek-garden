@@ -18,7 +18,8 @@ const transferEvent = parseAbiItem("event Transfer(address indexed from, address
 const CROPS = ["Sunflower", "Pumpkin", "Block Broccoli", "Timothy Hay", "Golden Carrot", "Sunflower", "Nap Chamomile", "Pumpkin", "Timothy Hay"];
 const SUPPLY = 1000;
 
-const state = { nftOn: false, account: null, walletClient: null };
+// collection: the Squeek NFT contract the garden uses now (its squeekNft()); null while holder plots are off.
+const state = { nftOn: false, collection: null, account: null, walletClient: null };
 const read = (functionName, args) => publicClient.readContract({ address: deployment.garden, abi: gardenAbi, functionName, args });
 
 $("mint-left").innerHTML = t("mint.left", { n: SUPPLY.toLocaleString("en-US"), total: SUPPLY.toLocaleString("en-US") });
@@ -44,7 +45,9 @@ async function loadStatus() {
     return;
   }
   try {
-    state.nftOn = BigInt(await read("squeekNft")) !== 0n;
+    const collection = await read("squeekNft");
+    state.nftOn = BigInt(collection) !== 0n;
+    state.collection = state.nftOn ? collection : null;
     const pill = $("nft-status");
     pill.textContent = state.nftOn ? t("status.open") : t("status.soon");
     pill.classList.add(state.nftOn ? "on" : "soon");
@@ -56,8 +59,9 @@ async function loadStatus() {
   }
   setBindEnabled(state.nftOn);
   if (!state.nftOn) $("bind-status").textContent = t("bind.off");
-  if (deployment.squeekNft && !isLocal) {
-    const link = `<a href="https://sepolia.etherscan.io/address/${deployment.squeekNft}" target="_blank" rel="noopener">${short(deployment.squeekNft)}</a>`;
+  const shown = state.collection ?? deployment.squeekNft;
+  if (shown && !isLocal) {
+    const link = `<a href="https://sepolia.etherscan.io/address/${shown}" target="_blank" rel="noopener">${short(shown)}</a>`;
     $("nft-collection").innerHTML = t("know.collectionLink", { link });
   }
 }
@@ -79,25 +83,55 @@ async function showBinding() {
   return tokenId;
 }
 
+/** First block worth scanning for a collection's transfers. The launch collection's is known; for one the owner
+ *  switched to later (setSqueekNft), it is the block the contract appeared in, found once by a binary search on its
+ *  code (the log gateway keeps full history) and remembered in this browser. */
+async function collectionStart(collection) {
+  if (collection.toLowerCase() === deployment.squeekNft?.toLowerCase()) return BigInt(deployment.squeekNftFromBlock ?? 0);
+  const key = `squeek-garden:nft-start:${collection.toLowerCase()}`;
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) return BigInt(saved);
+  } catch {}
+  let lo = 0n;
+  let hi = await logsClient.getBlockNumber();
+  try {
+    while (lo < hi) {
+      const mid = (lo + hi) / 2n;
+      const code = await logsClient.getCode({ address: collection, blockNumber: mid });
+      if (code && code !== "0x") hi = mid;
+      else lo = mid + 1n;
+    }
+  } catch {
+    return BigInt(deployment.deployBlock ?? 0); // no history: at least everything since the garden went live
+  }
+  try {
+    localStorage.setItem(key, String(lo));
+  } catch {}
+  return lo;
+}
+
 /** Squeeks in the wallet: the collection is not enumerable, so look at transfers into it and keep the ones still held.
  *  Scans from the collection's first block in 45,000-block chunks (RPCs cap a log query at 50,000) and skips any
  *  chunk the node refuses; the manual number input covers what the scan misses. */
 async function findSqueeks(account) {
+  const collection = state.collection;
+  if (!collection) return [];
   const LOG_SPAN = 45_000n;
   const latest = await publicClient.getBlockNumber();
   const chunks = [];
-  for (let from = BigInt(deployment.squeekNftFromBlock ?? 0); from <= latest; from += LOG_SPAN) {
+  for (let from = await collectionStart(collection); from <= latest; from += LOG_SPAN) {
     const to = from + LOG_SPAN - 1n < latest ? from + LOG_SPAN - 1n : latest;
     chunks.push(
       logsClient
-        .getLogs({ address: deployment.squeekNft, event: transferEvent, args: { to: account }, fromBlock: from, toBlock: to })
+        .getLogs({ address: collection, event: transferEvent, args: { to: account }, fromBlock: from, toBlock: to })
         .catch(() => []),
     );
   }
   const logs = (await Promise.all(chunks)).flat();
   const ids = [...new Set(logs.map((l) => l.args.tokenId))];
   const owners = await Promise.all(
-    ids.map((id) => publicClient.readContract({ address: deployment.squeekNft, abi: nftAbi, functionName: "ownerOf", args: [id] }).catch(() => null)),
+    ids.map((id) => publicClient.readContract({ address: collection, abi: nftAbi, functionName: "ownerOf", args: [id] }).catch(() => null)),
   );
   return ids.filter((_, k) => owners[k]?.toLowerCase() === account.toLowerCase()).sort((a, b) => (a < b ? -1 : 1));
 }
