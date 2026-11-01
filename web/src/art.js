@@ -433,6 +433,42 @@ const standSprite = () =>
     p.rect(12, 26, 40, 1, "#9a8064");
   });
 
+/** Squeektoshi's face from the front with a sprout on his head: the site logo and favicon. Mirrored around x = 16. */
+export const logoURL = () =>
+  sprite(
+    "logo",
+    32,
+    32,
+    (p) => {
+      p.line(16, 3, 16, 8, C.leafD);
+      p.ellipse(13, 4, 2.6, 1.4, C.leaf);
+      p.ellipse(19, 4, 2.6, 1.4, C.leafL);
+      for (const ex of [8, 24]) {
+        p.circle(ex, 10, 3.6, C.fur);
+        p.circle(ex, 10, 1.8, C.pink);
+      }
+      p.ellipse(16, 18, 12, 10, C.fur);
+      p.ellipse(16, 12, 5, 2.2, C.furH);
+      p.ellipse(16, 23, 8, 4.6, C.furL);
+      p.ellipse(16, 18, 1.2, 4, C.furL);
+    },
+    {
+      after(p) {
+        for (const x of [10, 20]) {
+          p.rect(x, 16, 2, 2, C.eye);
+          p.set(x, 16, "#ffffff");
+        }
+        p.rect(7, 20, 2, 1, C.pink);
+        p.rect(23, 20, 2, 1, C.pink);
+        p.rect(15, 20, 2, 1, C.nose);
+        p.set(14, 22, C.eye);
+        p.set(17, 22, C.eye);
+        p.set(15, 23, C.eye);
+        p.set(16, 23, C.eye);
+      },
+    },
+  );
+
 /** Squeektoshi in the wheel. `spinSeconds` is one wheel turn at the live rpm; 0 means asleep. */
 export function hamsterArt(spinSeconds) {
   const running = spinSeconds > 0;
