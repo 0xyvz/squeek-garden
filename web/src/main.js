@@ -35,7 +35,7 @@ const HELP_BONUS = 5n;
 const WORK_PER_KM = 1140;
 const WORK_PER_BLOCK = 11;
 const ROUND_SECONDS = 600;
-const GENESIS_TS = 1793022600; // SqueekCore configuration().genesisTimestamp; update after a Squeekchain reinstall
+const GENESIS_TS = 1793735400; // SqueekCore configuration().genesisTimestamp; update after a Squeekchain reinstall
 
 const MODE = [
   { key: "work", icon: "⚙️", label: t("mode.0") },
