@@ -379,6 +379,7 @@ async function loadPlayers() {
     if (page.length < 200) break;
   }
   state.players = all;
+  state.playersLoaded = true;
 }
 
 const blockTimes = new Map();
@@ -407,6 +408,7 @@ async function loadHamster() {
   } catch {
     state.hamster = null;
   }
+  state.hamsterTried = true;
 }
 
 /** Plays the effects for a newly mined block or newly settled wheel work, once the page shows the new numbers. */
@@ -945,12 +947,16 @@ function renderStage() {
   const r = state.readings;
   const liveWork = liveReadings()?.liveWork;
   const pending = h && r && liveWork > r.work ? liveWork - r.work : 0n;
-  const label = !h ? t("stage.unreachable") : running ? t("stage.running") : h.online ? t("stage.napping") : t("stage.offline");
-  const detail = !h
-    ? t("stage.detailNone")
-    : running
-      ? t("stage.detailRun", { kmh: h.kmh.toFixed(1), today: h.todayKm.toFixed(2) })
-      : t("stage.detailNap", { today: h.todayKm.toFixed(2) });
+  const waiting = !h && !state.hamsterTried; // first API answer still on its way
+  const known = state.seeds.length > 0; // the garden has been read at least once
+  const label = waiting ? "…" : !h ? t("stage.unreachable") : running ? t("stage.running") : h.online ? t("stage.napping") : t("stage.offline");
+  const detail = waiting
+    ? ""
+    : !h
+      ? t("stage.detailNone")
+      : running
+        ? t("stage.detailRun", { kmh: h.kmh.toFixed(1), today: h.todayKm.toFixed(2) })
+        : t("stage.detailNap", { today: h.todayKm.toFixed(2) });
   const badge = stageBadge(running, night);
   const snacks = tp("pantry.snacks", Number(state.pantry), { n: fmt(state.pantry) });
 
@@ -979,18 +985,20 @@ function renderStage() {
       <div class="pantry-jar">${pantryArt(fill)}</div>
       <div class="pantry-info">
         <span>${t("hud.pantry")}</span>
-        <b>${snacks}</b>
-        <small>${nextSeed ? t("pantry.more", { n: fmt(goal - state.pantry), seed: esc(seedName(nextSeed.s.name)) }) : t("pantry.allFull")}</small>
+        <b>${known ? snacks : "…"}</b>
+        <small>${!known ? "…" : nextSeed ? t("pantry.more", { n: fmt(goal - state.pantry), seed: esc(seedName(nextSeed.s.name)) }) : t("pantry.allFull")}</small>
         <div class="mini-bar"><i style="width:${(fill * 100).toFixed(1)}%"></i></div>
       </div>
     </div>`;
 
   const art = heroFor(running || night);
-  const sceneDetail = !h
-    ? t("scene.lastSettled")
-    : running
-      ? t("scene.run", { kmh: h.kmh.toFixed(1), today: h.todayKm.toFixed(2) })
-      : t("scene.nap", { today: h.todayKm.toFixed(2) });
+  const sceneDetail = waiting
+    ? ""
+    : !h
+      ? t("scene.lastSettled")
+      : running
+        ? t("scene.run", { kmh: h.kmh.toFixed(1), today: h.todayKm.toFixed(2) })
+        : t("scene.nap", { today: h.todayKm.toFixed(2) });
   if (art) {
     // Scene art at its natural strip shape: a short status in the empty sky, the live wheel on the meadow, and one
     // slim row of readings underneath.
@@ -1017,10 +1025,10 @@ function renderStage() {
             <span class="hud-jar">${pantryArt(fill)}</span>
             <div class="hud-pantry-text">
               <span>${t("hud.pantry")}</span>
-              <b>${nextSeed ? tp("pantry.snacks", Number(goal), { n: `${fmt(state.pantry)} / ${fmt(goal)}` }) : snacks}</b>
+              <b>${!known ? "…" : nextSeed ? tp("pantry.snacks", Number(goal), { n: `${fmt(state.pantry)} / ${fmt(goal)}` }) : snacks}</b>
               <div class="mini-bar"><i style="width:${(fill * 100).toFixed(1)}%"></i></div>
             </div>
-            <small>${nextSeed ? t("pantry.unlocks", { seed: esc(seedName(nextSeed.s.name)) }) : t("pantry.all")}</small>
+            <small>${!known ? "…" : nextSeed ? t("pantry.unlocks", { seed: esc(seedName(nextSeed.s.name)) }) : t("pantry.all")}</small>
           </div>
           ${dev}
         </div>
@@ -1367,7 +1375,7 @@ function renderBoard() {
     "board",
     top.length
       ? head + top.map(row).join("") + (mine >= 15 ? `<li class="gap">…</li>${row(ranked[mine], mine)}` : "")
-      : `<li class="empty-board">${t("board.empty")}</li>`,
+      : `<li class="empty-board">${state.playersLoaded ? t("board.empty") : "…"}</li>`,
   );
 }
 
@@ -1609,7 +1617,10 @@ onWalletChange((kind, value) => {
 restoreWallet()
   .then((restored) => restored && Object.assign(state, restored))
   .catch(() => {})
-  .then(refresh)
+  .then(() => {
+    render();
+    return refresh();
+  })
   .then(() => {
     const g = new URLSearchParams(location.search).get("g");
     if (g && deployment) visit(g);
